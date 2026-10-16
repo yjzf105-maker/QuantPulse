@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d18">
+<title>QuantPulse · KairoTrend V16 实时盯盘</title>
+<style>
+:root{--bg:#080d18;--panel:#111827;--panel2:#151f30;--line:#263247;--text:#edf3ff;--muted:#8e9bb2;--green:#2bd49a;--red:#ff6378;--blue:#75a7ff;--gold:#f6c96b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#14233a 0,#080d18 48%);color:var(--text);font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 12px calc(82px + env(safe-area-inset-bottom));}
+.app{max-width:900px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;padding:15px 2px 18px}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#77a7ff,#7a6dff);display:grid;place-items:center;font-weight:900;color:#08101e;font-size:18px}.brand b{font-size:17px;letter-spacing:.2px}.sub{font-size:11px;color:var(--muted);margin-top:3px}.status{font-size:11px;border:1px solid #285746;color:var(--green);border-radius:99px;padding:7px 9px;white-space:nowrap}.status.off{border-color:#67404b;color:var(--gold)}
+.panel{background:linear-gradient(145deg,rgba(20,30,47,.96),rgba(13,20,33,.96));border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 12px 30px #0002}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px}select,button{background:#182338;border:1px solid #2b3b54;color:var(--text);border-radius:11px;padding:11px 10px;font-size:13px;min-width:0}button{cursor:pointer}button:active{transform:scale(.98)}.price{font-size:30px;font-weight:750;letter-spacing:-1px;margin:7px 0 4px;font-variant-numeric:tabular-nums}.change{font-size:12px;color:var(--muted)}.pill{border-radius:9px;padding:8px 10px;font-weight:800;font-size:12px}.buy{background:#153c34;color:var(--green)}.sell{background:#431f2a;color:var(--red)}.wait{background:#322d20;color:var(--gold)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.metric{background:#0d1524;border:1px solid #202e43;border-radius:12px;padding:10px}.metric span{display:block;color:var(--muted);font-size:11px;margin-bottom:7px}.metric b{font-size:13px;font-variant-numeric:tabular-nums;word-break:break-word}.section-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}.section-title small{font-weight:400;color:var(--muted);font-size:11px}.tf{display:flex;gap:7px;margin-bottom:10px}.tf button{flex:1;padding:9px 0;color:var(--muted)}.tf button.active{background:#263c5b;border-color:#456a9f;color:#fff}.chart-wrap{height:270px;position:relative;width:100%;overflow:hidden;border-radius:10px;background:#0a1220}.chart-wrap canvas{width:100%;height:100%;display:block}.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:10px;margin-top:10px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}.strategy-list{display:grid;gap:8px}.strat{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#0d1524;border:1px solid #202e43;padding:11px;border-radius:12px}.strat b{font-size:12px}.strat p{font-size:11px;color:var(--muted);margin:5px 0 0;line-height:1.4}.vote{font-size:11px;font-weight:800;border-radius:8px;padding:7px 8px;white-space:nowrap}.forecast{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.fitem{background:#0d1524;border:1px solid #202e43;border-radius:10px;padding:9px 4px;text-align:center;min-width:0}.fitem small{display:block;color:var(--muted);font-size:10px;margin-bottom:8px}.fitem b{font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis}.fitem span{font-size:10px;display:block;margin-top:6px}.note{font-size:11px;color:var(--muted);line-height:1.6}.footer-nav{position:fixed;z-index:5;bottom:0;left:0;right:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:#0a101eeF;border-top:1px solid #202b3d;backdrop-filter:blur(18px);display:flex;justify-content:center}.nav-inner{display:flex;width:min(500px,100%);gap:8px}.nav-inner button{flex:1;border:0;background:transparent;color:var(--muted);padding:10px}.nav-inner button.active{background:#24334b;color:white;border-radius:12px}.loading{color:var(--gold);font-size:12px}.tiny{font-size:10px;color:var(--muted)}@media(min-width:650px){.controls{grid-template-columns:1fr 1fr 1fr}.chart-wrap{height:360px}.price{font-size:36px}}
+</style>
+</head>
+<body><main class="app">
+<header class="top"><div class="brand"><div class="logo">Q</div><div><b>QuantPulse</b><div class="sub">KAIROTREND V16 · LIVE MARKET RADAR</div></div></div><div id="status" class="status off">● 正在连接行情</div></header>
+<div class="controls">
+<select id="symbol" aria-label="交易品种"><option value="BTC-USDT-SWAP">BTC 永续 · BTC-USDT-SWAP</option><option value="ETH-USDT-SWAP">ETH 永续 · ETH-USDT-SWAP</option><option value="SOL-USDT-SWAP">SOL 永续 · SOL-USDT-SWAP</option><option value="DOGE-USDT-SWAP">DOGE 永续 · DOGE-USDT-SWAP</option></select>
+<select id="interval" aria-label="K线周期"><option value="1m">1 分钟</option><option value="3m">3 分钟</option><option value="5m">5 分钟</option><option value="15m">15 分钟</option><option value="1H">1 小时</option></select>
+<select id="refresh"><option value="15000">刷新频率 · 15 秒</option><option value="30000">刷新频率 · 30 秒</option><option value="60000">刷新频率 · 60 秒</option></select>
+</div>
+<section class="panel"><div class="row"><div><div id="instName" class="sub">OKX 永续合约 · USDT 保证金</div><div id="price" class="price">等待行情…</div><div id="updated" class="change">首次加载公开 K 线数据</div></div><div id="signalPill" class="pill wait">等待数据</div></div>
+<div class="metrics"><div class="metric"><span>KairoTrend 评分</span><b id="score">—</b></div><div class="metric"><span>ATR(14)</span><b id="atr">—</b></div><div class="metric"><span>信号周期</span><b id="tfLabel">1 分钟</b></div></div></section>
+<section class="panel"><div class="section-title">行情 K 线 <small id="chartMeta">OKX 公开市场数据</small></div><div class="chart-wrap"><canvas id="chart"></canvas></div><div class="legend"><span><i class="dot" style="background:#2bd49a"></i>上涨</span><span><i class="dot" style="background:#ff6378"></i>下跌</span><span><i class="dot" style="background:#aab4c3"></i>入场虚线</span><span><i class="dot" style="background:#ff6378"></i>止损</span><span><i class="dot" style="background:#2bd49a"></i>止盈</span></div></section>
+<section class="panel"><div class="section-title">KairoTrend V16 交易计划 <small>仅信号提示 · 不自动下单</small></div><div class="metrics" style="margin-top:0"><div class="metric"><span>参考入场</span><b id="entry">—</b></div><div class="metric"><span>ATR 止损</span><b id="sl">—</b></div><div class="metric"><span>1:2 止盈</span><b id="tp">—</b></div></div><p id="planText" class="note" style="margin-bottom:0">数据加载后显示策略解释。入场价以最近已收盘 K 线为参考。</p></section>
+<section class="panel"><div class="section-title">KairoTrend V16 信号因子 <small>多因子评分 · 1分钟优先</small></div><div class="strategy-list" id="strategies"><div class="strat"><div><b>趋势跟踪</b><p>等待行情数据</p></div><span class="vote wait">—</span></div></div></section>
+<section class="panel"><div class="section-title">KairoTrend V16 · 未来 5 根 K 线 <small>情景推演，非保证预测</small></div><div class="forecast" id="forecast"><div class="fitem"><small>+1</small><b>等待</b></div><div class="fitem"><small>+2</small><b>等待</b></div><div class="fitem"><small>+3</small><b>等待</b></div><div class="fitem"><small>+4</small><b>等待</b></div><div class="fitem"><small>+5</small><b>等待</b></div></div><p class="note">KairoTrend 使用 EMA 9/21/50、RSI、短线动量、回踩/突破与 ATR 构建未来5根K线情景区间。它不是确定性预测；策略按最近已收盘K线计算，价格由 OKX WebSocket 实时更新。</p></section>
+<section class="panel"><div class="section-title">风险与数据说明</div><p class="note">此网页只读取 OKX 公开行情，不连接账户、不读取 API 密钥、不下单。综合评分是透明的规则模型，不是经过验证的盈利承诺。真实交易前应计入手续费、资金费率、滑点与成交延迟；历史回测也不能保证未来表现。</p><p id="error" class="note" style="color:var(--gold);margin-bottom:0">若行情加载失败，请检查网络或稍后重试。部分网络环境可能限制访问 OKX API。</p></section>
+</main>
+<nav class="footer-nav"><div class="nav-inner"><button class="active" data-target="top">◈ 盯盘</button><button data-target="strategies">⌁ 策略</button><button data-target="forecast">↗ 预测</button><button data-target="risk">◇ 风险</button></div></nav>
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const state={candles:[],busy:false,timer:null,signal:0,plan:null,livePrice:null,ws:null,wsRetry:null};
+const fmt=(n,d=2)=>Number.isFinite(n)?n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const fmtPrice=n=>Number.isFinite(n)?(n>=1000?fmt(n,1):n>=1?fmt(n,3):fmt(n,6)):'—';
+const mapBar={'1m':'1m','3m':'3m','5m':'5m','15m':'15m','1H':'1H'};
+function ema(values,period){let out=Array(values.length).fill(null),k=2/(period+1),prev;values.forEach((v,i)=>{prev=prev===undefined?v:v*k+prev*(1-k);out[i]=prev});return out}
+function rsi(vals,p=14){let out=Array(vals.length).fill(50);for(let i=p;i<vals.length;i++){let up=0,dn=0;for(let j=i-p+1;j<=i;j++){let d=vals[j]-vals[j-1];if(d>0)up+=d;else dn-=d}out[i]=dn===0?100:100-100/(1+(up/p)/(dn/p))}return out}
+function calc(c){
+ const close=c.map(x=>x.c),high=c.map(x=>x.h),low=c.map(x=>x.l),vol=c.map(x=>x.v);
+ const e9=ema(close,9),e21=ema(close,21),e50=ema(close,50),rs=rsi(close);
+ let tr=c.map((x,i)=>i===0?x.h-x.l:Math.max(x.h-x.l,Math.abs(x.h-close[i-1]),Math.abs(x.l-close[i-1])));
+ let atrs=ema(tr,14),i=c.length-1,price=close[i],a=atrs[i]||price*.003;
+ const prev=Math.max(0,i-1),back3=Math.max(0,i-3),back5=Math.max(0,i-5);
+ const mean=close.slice(Math.max(0,i-19),i+1),avg=mean.reduce((s,x)=>s+x,0)/mean.length;
+ const sd=Math.sqrt(mean.reduce((s,x)=>s+(x-avg)**2,0)/mean.length);
+ const recentH=Math.max(...high.slice(Math.max(0,i-20),i)),recentL=Math.min(...low.slice(Math.max(0,i-20),i));
+ const avgVol=vol.slice(Math.max(0,i-19),i).reduce((s,x)=>s+x,0)/Math.max(1,Math.min(19,i));
+ const upTrend=e9[i]>e21[i]&&e21[i]>e50[i],downTrend=e9[i]<e21[i]&&e21[i]<e50[i];
+ const crossUp=e9[i]>e21[i]&&e9[prev]<=e21[prev],crossDn=e9[i]<e21[i]&&e9[prev]>=e21[prev];
+ const momentum=close[i]-close[back3], candleRange=Math.max(high[i]-low[i],a*.05);
+ const bullishClose=close[i]>=c[i].o,bearishClose=close[i]<=c[i].o;
+ const nearFast=Math.abs(price-e9[i])<=a*.45,nearMid=Math.abs(price-e21[i])<=a*.65;
+ const breakoutUp=price>recentH,breakoutDn=price<recentL;
+ const volumeOK=vol[i]>=avgVol*.85;
+ // KairoTrend-style factor scoring, tuned to avoid requiring every filter at once on 1m charts.
+ let factors=[
+  {name:'EMA 趋势结构',desc:'EMA 9 / 21 / 50 多空排列；短周期不要求三线完全排列',v:upTrend?1:downTrend?-1:crossUp?1:crossDn?-1:0},
+  {name:'动量与 RSI',desc:'3根K线方向结合 RSI 50 中轴，过滤弱动量',v:momentum>0&&rs[i]>=50?1:momentum<0&&rs[i]<=50?-1:0},
+  {name:'回踩入场',desc:'价格回到 EMA 9 / 21 附近，并由当前K线方向确认',v:(upTrend||e9[i]>e21[i])&&nearFast||((upTrend||e9[i]>e21[i])&&nearMid&&bullishClose)?1:(downTrend||e9[i]<e21[i])&&nearFast||((downTrend||e9[i]<e21[i])&&nearMid&&bearishClose)?-1:0},
+  {name:'突破动量',desc:'参考前20根高低点及成交量；突破分数不要求必须出现',v:breakoutUp&&volumeOK?1:breakoutDn&&volumeOK?-1:0},
+  {name:'RSI 状态',desc:'避开极端追涨杀跌；RSI 52以上偏多、48以下偏空',v:rs[i]>=52&&rs[i]<78?1:rs[i]<=48&&rs[i]>22?-1:0},
+  {name:'K线确认',desc:'收盘方向与 EMA9 短期斜率一致',v:bullishClose&&e9[i]>=e9[back5]?1:bearishClose&&e9[i]<=e9[back5]?-1:0}
+ ];
+ let score=factors.reduce((s,x)=>s+x.v,0);
+ // On 1m charts allow a signal at +/-2; on higher timeframes use the same transparent threshold.
+ let signal=score>=2?1:score<=-2?-1:0;
+ // ATR stop and fixed 1:2 reward/risk.
+ let entry=price,sl=signal===1?entry-1.5*a:signal===-1?entry+1.5*a:NaN,tp=signal===1?entry+3*a:signal===-1?entry-3*a:NaN;
+ // Five-candle scenario based on short EMA slope, with a capped ATR projection and expanding uncertainty.
+ let slope=(e9[i]-e9[back5])/Math.max(1,i-back5),step=Math.max(-.4*a,Math.min(.4*a,slope));
+ let forecast=Array.from({length:5},(_,j)=>({n:j+1,p:price+step*(j+1),lo:price+step*(j+1)-a*(.45+.12*j),hi:price+step*(j+1)+a*(.45+.12*j)}));
+ return {price,atr:a,rs:rs[i],e9:e9[i],e21:e21[i],e50:e50[i],avg,sd,trend:upTrend?1:downTrend?-1:0,votes:factors,score,strength:Math.round(Math.abs(score)/6*100),signal,entry,sl,tp,forecast,recentH,recentL};
+}
+async function load(){
+ if(state.busy)return;state.busy=true;$('error').textContent='正在读取 OKX 公开 K 线…';
+ const inst=$('symbol').value,bar=mapBar[$('interval').value];
+ $('instName').textContent='OKX 永续合约 · '+inst;$('tfLabel').textContent=$('interval').selectedOptions[0].text;
+ try{
+  const url='https://www.okx.com/api/v5/market/candles?instId='+encodeURIComponent(inst)+'&bar='+encodeURIComponent(bar)+'&limit=200';
+  const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);
+  const json=await res.json();if(json.code!=='0'||!json.data?.length)throw new Error(json.msg||'接口未返回 K 线');
+  state.candles=json.data.map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5],confirm:r[8]})).reverse();
+  // Exclude current unconfirmed candle from strategy calculations when enough data exists.
+  let closed=state.candles.filter(x=>x.confirm==='1');if(closed.length<40)closed=state.candles.slice(0,-1);
+  if(closed.length<25)throw new Error('有效 K 线不足，请切换周期后重试');
+  state.calc=calc(closed);state.displayCandles=state.candles.slice(-100);render();
+  $('status').textContent='● OKX 行情已连接';$('status').classList.remove('off');
+  $('updated').textContent='最近更新 '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · 已收盘 K 线计算';
+  $('error').textContent='行情来源：OKX 公共 REST + WebSocket。最新成交价实时更新；KairoTrend 信号按已收盘K线计算。';
+ }catch(e){$('status').textContent='● 行情连接异常';$('status').classList.add('off');$('error').textContent='加载失败：'+e.message+'。请检查网络，或稍后点击刷新。'}
+ finally{state.busy=false}
+}
+function render(){
+ const x=state.calc;if(!x)return;
+ $('price').textContent=fmtPrice(state.livePrice ?? x.price);$('score').textContent=(x.score>0?'+':'')+x.score+' / 4 ('+x.strength+'%)';$('atr').textContent=fmtPrice(x.atr);
+ const pill=$('signalPill');pill.className='pill '+(x.signal===1?'buy':x.signal===-1?'sell':'wait');pill.textContent=x.signal===1?'BUY · 偏多':x.signal===-1?'SELL · 偏空':'WAIT · 观望';
+ $('entry').textContent=fmtPrice(x.entry);$('sl').textContent=fmtPrice(x.sl);$('tp').textContent=fmtPrice(x.tp);
+ $('planText').textContent=x.signal===0?'当前综合方向不够一致，建议观望。参考入场仍显示最近已收盘价；只有方向明确时才给出 ATR 止损和 1:2 止盈。':(x.signal===1?'偏多信号：':'偏空信号：')+'参考入场 '+fmtPrice(x.entry)+'；止损距离 1.5×ATR，目标距离 3×ATR，对应理论风险收益比 1:2。此价格是策略参考，不是下单指令。';
+ $('strategies').innerHTML=x.votes.map(v=>`<div class="strat"><div><b>${v.name}</b><p>${v.desc}</p></div><span class="vote ${v.v>0?'buy':v.v<0?'sell':'wait'}">${v.v>0?'偏多 +1':v.v<0?'偏空 −1':'中性 0'}</span></div>`).join('');
+ $('forecast').innerHTML=x.forecast.map(f=>`<div class="fitem"><small>+${f.n} 根</small><b>${fmtPrice(f.p)}</b><span style="color:var(--muted)">${fmtPrice(f.lo)}–</span><span style="color:var(--muted)">${fmtPrice(f.hi)}</span></div>`).join('');
+ drawChart();
+}
+function drawChart(){
+ const canvas=$('chart'),rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);
+ canvas.width=Math.max(1,Math.floor(rect.width*dpr));canvas.height=Math.max(1,Math.floor(rect.height*dpr));
+ const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);const W=rect.width,H=rect.height;
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#0a1220';ctx.fillRect(0,0,W,H);
+ const candles=state.displayCandles||[];if(!candles.length)return;
+ const x=state.calc,vals=candles.flatMap(c=>[c.h,c.l]);if(state.livePrice!==null)vals.push(state.livePrice);if(x&&Number.isFinite(x.tp))vals.push(x.tp,x.sl,x.entry);
+ if(x){x.forecast.forEach(f=>vals.push(f.lo,f.hi,f.p))}
+ let min=Math.min(...vals),max=Math.max(...vals),pad=(max-min)*.09||1;min-=pad;max+=pad;
+ const left=8,right=58,top=12,bottom=22,plotW=W-left-right,plotH=H-top-bottom;
+ const y=v=>top+(max-v)/(max-min)*plotH,xx=i=>left+(i+.5)*plotW/(candles.length+5);
+ ctx.font='10px -apple-system,sans-serif';ctx.textAlign='left';ctx.fillStyle='#8190a8';
+ for(let k=0;k<=4;k++){let v=max-(max-min)*k/4,yy=y(v);ctx.strokeStyle='#1e2a3c';ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(W-right+3,yy);ctx.stroke();ctx.fillText(fmtPrice(v),W-right+7,yy+3)}
+ const cw=Math.max(2,Math.min(8,plotW/candles.length*.62));
+ candles.forEach((c,i)=>{let cx=xx(i),up=c.c>=c.o;ctx.strokeStyle=up?'#2bd49a':'#ff6378';ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,y(c.h));ctx.lineTo(cx,y(c.l));ctx.stroke();let yo=y(Math.max(c.o,c.c)),hh=Math.max(1,Math.abs(y(c.o)-y(c.c)));ctx.fillRect(cx-cw/2,yo,cw,hh)});
+ function line(v,color,label,dash=[]){if(!Number.isFinite(v))return;let yy=y(v);ctx.save();ctx.strokeStyle=color;ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(W-right+3,yy);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=color;ctx.fillRect(W-right+3,yy-7,right-5,14);ctx.fillStyle='#08101e';ctx.fillText(label,W-right+6,yy+3);ctx.restore()}
+ if(state.livePrice!==null)line(state.livePrice,'#f6c96b','LIVE',[4,3]);
+ if(x){if(x.signal!==0){line(x.entry,'#aab4c3','ENTRY',[5,4]);line(x.sl,'#ff6378','SL');line(x.tp,'#2bd49a','TP')}
+ const last=candles.length-1,baseX=xx(last),step=plotW/(candles.length+5);
+ ctx.strokeStyle='#75a7ff';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(baseX,y(candles[last].c));x.forecast.forEach((f,j)=>ctx.lineTo(baseX+(j+1)*step,y(f.p)));ctx.stroke();ctx.setLineDash([]);
+ x.forecast.forEach((f,j)=>{let cx=baseX+(j+1)*step;ctx.strokeStyle='#75a7ff66';ctx.beginPath();ctx.moveTo(cx,y(f.hi));ctx.lineTo(cx,y(f.lo));ctx.stroke()});
+ }
+ ctx.fillStyle='#8190a8';ctx.fillText('历史 K 线 · 右侧为情景推演',left,H-7);
+}
+
+function connectLiveTicker(){
+ if(state.ws){try{state.ws.onclose=null;state.ws.close()}catch(e){} state.ws=null}
+ if(state.wsRetry){clearTimeout(state.wsRetry);state.wsRetry=null}
+ const inst=$('symbol').value;
+ try{
+  const ws=new WebSocket('wss://ws.okx.com:8443/ws/v5/public');
+  state.ws=ws;
+  ws.onopen=()=>{
+   if(state.ws!==ws)return;
+   ws.send(JSON.stringify({op:'subscribe',args:[{channel:'tickers',instId:inst}]}));
+   $('status').textContent='● OKX 实时行情已连接';
+   $('status').classList.remove('off');
+  };
+  ws.onmessage=(event)=>{
+   if(state.ws!==ws)return;
+   let msg;try{msg=JSON.parse(event.data)}catch(e){return}
+   if(msg.event==='error'){$('error').textContent='OKX 实时行情订阅失败：'+(msg.msg||'未知错误');return}
+   if(msg.arg?.channel==='tickers'&&msg.data?.length){
+    const last=Number(msg.data[0].last);
+    if(Number.isFinite(last)&&last>0){
+     state.livePrice=last;
+     $('price').textContent=fmtPrice(last);
+     $('updated').textContent='实时成交价 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · 策略按已收盘 K 线计算';
+     if(state.calc)drawChart();
+    }
+   }
+  };
+  ws.onerror=()=>{$('status').textContent='● 实时连接异常';$('status').classList.add('off')};
+  ws.onclose=()=>{
+   if(state.ws!==ws)return;
+   $('status').textContent='● 正在重连实时行情';$('status').classList.add('off');
+   state.wsRetry=setTimeout(connectLiveTicker,5000);
+  };
+ }catch(e){
+  $('status').textContent='● 浏览器不支持实时连接';$('status').classList.add('off');
+ }
+}
+
+$('symbol').addEventListener('change',()=>{state.livePrice=null;connectLiveTicker();load()});$('interval').addEventListener('change',load);
+$('refresh').addEventListener('change',()=>{if(state.timer)clearInterval(state.timer);state.timer=setInterval(load,+$('refresh').value)});
+document.querySelectorAll('.nav-inner button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-inner button').forEach(z=>z.classList.remove('active'));b.classList.add('active');let id=b.dataset.target;if(id==='top')window.scrollTo({top:0,behavior:'smooth'});else if(id==='strategies')document.querySelector('.strategy-list').scrollIntoView({behavior:'smooth',block:'center'});else if(id==='forecast')$('forecast').scrollIntoView({behavior:'smooth',block:'center'});else document.querySelectorAll('.panel')[5].scrollIntoView({behavior:'smooth',block:'center'})}));
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawChart,100)});
+load();connectLiveTicker();state.timer=setInterval(load,+$('refresh').value);
+})();
+</script></body></html>
