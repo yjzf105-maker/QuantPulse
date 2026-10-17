@@ -132,7 +132,7 @@ function connectLiveTicker(){
  if(state.wsRetry){clearTimeout(state.wsRetry);state.wsRetry=null}
  const inst=$('symbol').value;
  try{
-  const ws=new WebSocket('wss://ws.okx.com:8443/ws/v5/public');
+  const ws=new WebSocket('wss://ws.okx.com/ws/v5/public');
   state.ws=ws;
   ws.onopen=()=>{
    if(state.ws!==ws)return;
